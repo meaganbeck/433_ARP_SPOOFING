@@ -6,7 +6,8 @@ import re
 import pyshark
 import time
 import socket
-from outgoing_hash import * #outgoing_ARP_hash() and remove_ARP_hash()
+from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
+from arp_cache import * #store_cache(), check_cache(), get_cache()
 import scapy.all import * #dunno if using yet
 from getmac import get_mac_address as gma
 
@@ -39,7 +40,7 @@ def capture_packets():
             outgoing_ARP_hash(hashtable, new_packet)
 
         elif new_packet.dest_ip == myIP: #incoming
-            if new_packet.mac_addr is in hashtable: 
+            if check_hash(new_packet.mac_addr) == True: 
                 #maybe store based on mac_addr??
                 #if is response to a sent arp request, remove from hash table
                 remove_ARP_hash(hashtable, new_packet)
@@ -49,30 +50,10 @@ def capture_packets():
                 elif check_cache(arp_cache, new_packet.mac_addr) == True: 
                     #has duplicates -> TODO: handle
 
-            elif new_packet.mac_addr not in hashtable:
+            elif check_hash(new_packet.mac_addr) == False:
                 #is a gratuitous packet -> TODO: handle
                 #may be bad guy \o-o/
     
-
-def store_cache(arp_cache, new_packet):
-"""I store Packet obj in our cache (dictionary)"""
-    arp_cache[new_packet.mac_addr] = new_packet;
-#dictionary (key, value) == (mac, Packet)
-
-
-def check_cache(arp_cache, mac_addr):
-"""I check the cache for duplicate mac addresses. I return a bool"""
-    for el in arp_cache:
-        if mac_addr == el:
-            return True
-    return False
-
-def get_cache(arp_cache, mac_addr):
-    """I take a mac address and return a Packet obj"""
-    packet = arp_cache[mac_addr]
-    return packet
-
-
 
 #Prevention:
 #send junk packet, entrap them
