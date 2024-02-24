@@ -6,6 +6,10 @@ import pyshark
 import time
 import socket
 
+#TODO: 
+#Build cache; use a Class? 
+
+
 def store_cache(arp_cache, new_packet):
 """I store Packet obj in our cache (dictionary)"""
     arp_cache[new_packet.mac_addr] = new_packet;
