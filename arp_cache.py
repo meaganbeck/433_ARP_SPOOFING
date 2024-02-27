@@ -28,3 +28,6 @@ def get_cache(arp_cache, mac_addr):
     packet = arp_cache[mac_addr]
     return packet
 
+def remove_cache(arp_cache, mac_addr):
+    """I take a mac address and remove all entries with the address from the cache"""
+    del arp_cache[mac_addr]
