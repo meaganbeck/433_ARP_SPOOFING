@@ -12,15 +12,14 @@ import scapy.all import * #dunno if using yet
 from handle_packets import * #block_cache(), block_gratuitous()
 from getmac import get_mac_address as gma
 
-class Packet:
-    mac_addr;
-    ip_addr;
-    timestamp;
-
 myMac = gma()
 hostname = socket.gethostname()
 myIp = socket.gethostbyname(hostname)
 
+class Packet:
+    mac_addr;
+    ip_addr;
+    timestamp;
 
 def capture_packets():
     block_gratuitous() #drops all gratuitous responses
