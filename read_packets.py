@@ -5,6 +5,7 @@ import re
 import pyshark
 import time
 import socket
+import netifaces
 from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
 import scapy.all import *
@@ -26,8 +27,9 @@ def capture_packets():
     
     arp_cache = {}
     hashtable = {} #?
+    logical_interface = netifaces.interfaces()
     
-    capture = pyshark.LiveCapture(interface='ethernet', bpf_filter='arp')
+    capture = pyshark.LiveCapture(interface=logical_interface, bpf_filter='arp')
     
     #sniff for packets continuously
     for packet in capture.sniff_continuosly(timeout=None):
@@ -65,13 +67,9 @@ def capture_packets():
                 #may be bad guy \o-o/
     
 def create_arp_reply(new_packet)
-    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), "ethernet")
-
-
-
+    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), logical_interface)
 
 #Prevention:
 #send junk packet, entrap them
 #use timestamps
 #make as a daemon (fork child process and then exit parent)
-#TODO: "ethernet" fix name -> interface
