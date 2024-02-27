@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-#She's a mess 
 import os
 import re
 import pyshark
@@ -8,7 +7,7 @@ import time
 import socket
 from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
-import scapy.all import * #dunno if using yet
+import scapy.all import *
 from handle_packets import * #block_cache(), block_gratuitous()
 from getmac import get_mac_address as gma
 
@@ -57,15 +56,15 @@ def capture_packets():
                 
                 elif check_cache(arp_cache, new_packet.mac_addr) == True: 
                     #has duplicates -> TODO: handle
+                    
+                    #remove from cache and drop new packet
+                    remove_cache(arp_cache, new_packet.mac_addr)
 
             elif check_hash(new_packet.mac_addr) == False:
-                block_gratuitous() 
+   
                 #may be bad guy \o-o/
     
 def create_arp_reply(new_packet)
-    #src = other guy
-    #dest_ip = mine
-    #mac_addr is other guy
     sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), "ethernet")
 
 
@@ -73,7 +72,6 @@ def create_arp_reply(new_packet)
 
 #Prevention:
 #send junk packet, entrap them
-#Getting a response when no request made
 #use timestamps
 #make as a daemon (fork child process and then exit parent)
-#TODO: "ethernet" -> interface
+#TODO: "ethernet" fix name -> interface
