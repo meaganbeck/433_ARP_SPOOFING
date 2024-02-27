@@ -11,13 +11,13 @@ import socket
 
 
 def store_cache(arp_cache, new_packet):
-"""I store Packet obj in our cache (dictionary)"""
+    """I store Packet obj in our cache (dictionary)"""
     arp_cache[new_packet.mac_addr] = new_packet;
 #dictionary (key, value) == (mac, Packet)
 
 
 def check_cache(arp_cache, mac_addr):
-"""I check the cache for duplicate mac addresses. I return a bool"""
+    """I check the cache for duplicate mac addresses. I return a bool"""
     for el in arp_cache:
         if mac_addr == el:
             return True

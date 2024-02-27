@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 import socket
-import scapy.all import * #dunno if using yet
+from scapy.all import * #dunno if using yet
 
 #TODO: "ethernet" fix
 

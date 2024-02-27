@@ -5,20 +5,24 @@ import re
 import pyshark
 import time
 import socket
+from sys import argv
 from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
-import scapy.all import *
+from scapy.all import *
 from handle_packets import * #block_cache(), block_gratuitous()
-from getmac import get_mac_address as gma
 
-myMac = gma()
-hostname = socket.gethostname()
-myIp = socket.gethostbyname(hostname)
+# argv contains: interface name, interface ip, interface mac, host name (in that order)
+my_name = argv[0]
+my_IP = argv[1]
+my_MAC = argv[2]
+host_name = argv[3]
+
 
 class Packet:
     mac_addr;
     ip_addr;
     timestamp;
+
 
 def capture_packets():
     block_gratuitous() #drops all gratuitous responses
@@ -27,7 +31,7 @@ def capture_packets():
     arp_cache = {}
     hashtable = {} #?
     
-    capture = pyshark.LiveCapture(interface='ethernet', bpf_filter='arp')
+    capture = pyshark.LiveCapture(interface=interface_name, bpf_filter='arp')
     
     #sniff for packets continuously
     for packet in capture.sniff_continuosly(timeout=None):
@@ -73,5 +77,4 @@ def create_arp_reply(new_packet)
 #Prevention:
 #send junk packet, entrap them
 #use timestamps
-#make as a daemon (fork child process and then exit parent)
-#TODO: "ethernet" fix name -> interface
+#TODO: "ethernet" fix name -> interface (use argv entries)
