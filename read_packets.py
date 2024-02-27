@@ -25,13 +25,13 @@ class Packet:
 
 
 def capture_packets():
-    block_gratuitous() #drops all gratuitous responses
-    block_arp_cache() #blocks all arp responses, does not store in cache
+    block_gratuitous(my_name) #drops all gratuitous responses
+    block_arp_cache(my_name) #blocks all arp responses, does not store in cache
     
     arp_cache = {}
     hashtable = {} #?
     
-    capture = pyshark.LiveCapture(interface=interface_name, bpf_filter='arp')
+    capture = pyshark.LiveCapture(interface=my_name, bpf_filter='arp')
     
     #sniff for packets continuously
     for packet in capture.sniff_continuosly(timeout=None):
@@ -69,7 +69,7 @@ def capture_packets():
                 #may be bad guy \o-o/
     
 def create_arp_reply(new_packet)
-    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), "ethernet")
+    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
 
 
 
