@@ -51,6 +51,7 @@ def capture_packets():
         elif new_packet.dest_ip == myIP: #incoming
             if check_hash(new_packet.ip_addr) == True: 
                 #is response to a sent arp request-> remove from hash table
+                #remove_ARP_hash(hashtable, new_packet)    
                 new_packet.complete = True
                 hashtable[new_packet.ip_addr] = new_packet
                 
@@ -64,11 +65,9 @@ def capture_packets():
                 elif check_cache(arp_cache, new_packet.mac_addr) == True: 
                     #if duplicates, remove from cache and drop new packet
                     remove_cache(arp_cache, new_packet.mac_addr)
+                    
+        purge_hash(hashtable)
 
-            #elif check_hash(new_packet.ip_addr) == False:
-   
-                #may be bad guy \o-o/
-    
 def create_arp_reply(new_packet)
     sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
 
@@ -76,6 +75,5 @@ def create_arp_reply(new_packet)
 
 
 #Prevention:
+
 #send junk packet, entrap them
-#use timestamps
-#purge hashtable after a certain amount of times
