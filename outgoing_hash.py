@@ -21,3 +21,9 @@ def check_hash(hashtable, packet):
     else
         return False
 
+def purge_hash(hashtable):
+    current_time = time.time()
+    for key in hashtable.keys():
+        if (current_time - hashtable[key].timestamp) > 2:
+            del hash_table[key]
+
