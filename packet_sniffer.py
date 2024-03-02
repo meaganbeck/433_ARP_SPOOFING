@@ -9,7 +9,7 @@ from sys import argv
 from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
 from scapy.all import *
-from handle_packets import * #block_cache(), block_gratuitous()
+from block_packets import * #block_arp_cache(), block_gratuitous()
 
 # argv contains: interface name, interface ip, interface mac, host name (in that order)
 my_name = argv[0]
