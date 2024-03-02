@@ -20,8 +20,10 @@ host_name = argv[3]
 
 class Packet:
     mac_addr;
-    ip_addr;
+    src_ip;
+    dest_ip;
     timestamp;
+    complete = False;
 
 
 def capture_packets():
@@ -29,7 +31,7 @@ def capture_packets():
     block_arp_cache(my_name) #blocks all arp responses, does not store in cache
     
     arp_cache = {}
-    hashtable = {} #?
+    hashtable = {}
     
     capture = pyshark.LiveCapture(interface=my_name, bpf_filter='arp')
     
@@ -43,13 +45,14 @@ def capture_packets():
         new_packet.timestamp = packet.sniff_time
         
         if new_packet.src_ip == myIP: #outgoing
-            #add to cache of outgoing requests without a response yet
+            #add to hash of outgoing requests without a response yet
             outgoing_ARP_hash(hashtable, new_packet)
 
         elif new_packet.dest_ip == myIP: #incoming
-            if check_hash(new_packet.mac_addr) == True: 
+            if check_hash(new_packet.ip_addr) == True: 
                 #is response to a sent arp request-> remove from hash table
-                remove_ARP_hash(hashtable, new_packet)
+                new_packet.complete = True
+                hashtable[new_packet.ip_addr] = new_packet
                 
                 if check_cache(arp_cache, new_packet.mac_addr) == False: 
                     #no duplicates -> store the packet in our cache
@@ -59,12 +62,10 @@ def capture_packets():
                     create_arp_reply(new_packet)
                 
                 elif check_cache(arp_cache, new_packet.mac_addr) == True: 
-                    #has duplicates -> TODO: handle
-                    
-                    #remove from cache and drop new packet
+                    #if duplicates, remove from cache and drop new packet
                     remove_cache(arp_cache, new_packet.mac_addr)
 
-            elif check_hash(new_packet.mac_addr) == False:
+            #elif check_hash(new_packet.ip_addr) == False:
    
                 #may be bad guy \o-o/
     
@@ -77,4 +78,4 @@ def create_arp_reply(new_packet)
 #Prevention:
 #send junk packet, entrap them
 #use timestamps
-#TODO: "ethernet" fix name -> interface (use argv entries)
+#purge hashtable after a certain amount of times
