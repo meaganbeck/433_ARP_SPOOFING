@@ -2,41 +2,30 @@
 
 import os
 import re
-#import pyshark # "my dependencies aren't working for some reason" -H  
 import time
 import socket
-import netifaces # pip3 install netifaces
 
+try:
+	import netifaces
+	import subprocess
+except ModuleNotFoundError:
+	print("Please ensure that you have installed the netifaces module for python (pip3 install netifaces).") 
+	exit()
 
 def main(): 
-
-	# TODO: Ensure user has correct dependencies installed
-		# option 1: throw an error if they don't, have them install themselves with pip3
-		# option 2: run some sort of script to install the dependencies for them 
-		
-
-	# unclear if socket module needed? 
-	hostname = socket.gethostname()
-	hostIP = socket.gethostbyname(hostname)
-
 	# Scan for interface names 
 	network_interfaces = netifaces.interfaces()
+
 	for i in range(len(network_interfaces)): 
 		interface_name = network_interfaces[i]
 		if not (interface_name.startswith('lo')): # skip loopback interfaces
 			addresses = netifaces.ifaddresses(interface_name)
-			interface_MAC = addresses[netifaces.AF_LINK][0]['addr']
 			interface_IP = addresses[netifaces.AF_INET][0]['addr']
+			interface_MAC = addresses[netifaces.AF_LINK][0]['addr']
 			print("Interface: " + interface_name)
 			print("MAC: " + interface_MAC)
 			print("IP: " + interface_IP) 
-		# TODO: 
-		# pass the interface name, IP, MAC, and host name as arguments to read_packets.py using subprocess 
-		# use subprocess.Popen to create child processes (Popen is non-blocking, run is blocking)
-		# probably fine for this parent process to terminate afterwards... 
-
-
-
+			subprocess.Popen(["./packet_sniffer.py", interface_name, interface_IP, interface_MAC])
 	return 0
 
 if __name__ == "__main__":

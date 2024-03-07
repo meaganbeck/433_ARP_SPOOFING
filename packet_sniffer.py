@@ -2,29 +2,29 @@
 
 import os
 import re
-import pyshark
+import pyshark # dependency
 import time
 import socket
 from sys import argv
-from outgoing_hash import * #outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
+from outgoing_hash import * # outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
-from scapy.all import *
+from scapy.all import * # dependency 
 from block_packets import * #block_arp_cache(), block_gratuitous()
 
-# argv contains: interface name, interface ip, interface mac, host name (in that order)
+# argv contains: interface name, interface ip, interface mac (in that order)
 my_name = argv[0]
 my_IP = argv[1]
 my_MAC = argv[2]
-host_name = argv[3]
-
 
 class Packet:
-    mac_addr;
-    src_ip;
-    dest_ip;
-    timestamp;
-    complete = False;
+    mac_addr = 0
+    src_ip = 0
+    dest_ip = 0
+    timestamp = 0
+    complete = False
 
+
+# TODO: Fix scapy issue (cannot import name 'CryptographyDepracationWarning')
 
 def capture_packets():
     block_gratuitous(my_name) #drops all gratuitous responses
@@ -68,7 +68,7 @@ def capture_packets():
                     
         purge_hash(hashtable)
 
-def create_arp_reply(new_packet)
+def create_arp_reply(new_packet):
     sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
 
 
