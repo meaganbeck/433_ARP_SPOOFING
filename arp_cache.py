@@ -2,7 +2,7 @@
 
 import os
 import re
-import pyshark
+# import pyshark
 import time
 import socket
 

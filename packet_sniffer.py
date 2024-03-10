@@ -1,15 +1,9 @@
 #!/usr/bin/python3
 
-import os
-import re
 import time
-import socket
 from sys import argv
-from outgoing_hash import * # outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
-from arp_cache import * #store_cache(), check_cache(), get_cache()
-from block_packets import * #block_arp_cache(), block_gratuitous()
+from arp_cache import * 
 
-# alert the user if they don't have the required dependencies installed 
 try: 
     import pyshark 
     from scapy.all import *
@@ -17,72 +11,87 @@ except ModuleNotFoundError:
     print("Make sure you are using Python 3.7+ and have installed the following dependencies:")
     print("pyshark (pip3 install pyshark)")
     print("scapy (pip3 install scapy)")
+    print("tshark (sudo apt install tshark)")
     exit()
+    
+# def create_arp_reply(new_packet):
+    # don't know 1) if this works 2) if we need it
+    # sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
 
 
-# argv contains: interface name, interface ip, interface mac (in that order)
-my_name = argv[0]
-my_IP = argv[1]
-my_MAC = argv[2]
+# argv contains: Interface name, interface ip, interface mac (in that order).
+# argv[0] is just the path to this script. Ignore it. 
+my_name = argv[1]
+my_IP = argv[2]
+my_MAC = argv[3]
 
 class Packet:
     mac_addr = 0
     src_ip = 0
     dest_ip = 0
-    timestamp = 0
+    opcode = 0
+    expiry = 0
     complete = False
 
+# Debug 
+if os.geteuid() != 0:
+    print("Error: Script requires root privileges.")
+    exit()
 
-# TODO: Debugging option: Print a message when a spoofed packet is found?
+# Disable acceptance of gratuitious arp requests in the kernel
+print(f"Interface name: {my_name}")
+print("Modifying kernel parameters...") 
+subprocess.run(["sysctl",f"net.ipv4.conf.{my_name}.arp_accept=0"])
 
-def capture_packets():
-    block_gratuitous(my_name) #drops all gratuitous responses
-    block_arp_cache(my_name) #blocks all arp responses, does not store in cache
+
+arp_cache = {}
+request_queue = {}
+
+capture = pyshark.LiveCapture(interface=my_name, bpf_filter='arp')
+
+#sniff for packets continuously
+for packet in capture.sniff_continuously(packet_count=5):
+    # TODO: Catch keyboard signal to terminate loop
+    print("Sniffing...")
+
+    #store packet data
+    arp_layer = packet['ARP']
+    packet_info = Packet()
+    packet_info.opcode = int(arp_layer.opcode, 16)
+    packet_info.mac_addr = packet.eth._all_fields.values()
+    packet_info.src_ip = packet.ip.src
+    packet_info.dest_ip = packet.ip.dst
     
-    arp_cache = {}
-    hashtable = {}
-    
-    capture = pyshark.LiveCapture(interface=my_name, bpf_filter='arp')
-    
-    #sniff for packets continuously
-    for packet in capture.sniff_continuosly(timeout=None):
-        #store packet data
-        new_packet = Packet()
-        new_packet.mac_addr = packet.eth._all_fields.values()
-        new_packet.src_ip = packet.ip.src
-        new_packet.dest_ip = packet.ip.dst
-        new_packet.timestamp = packet.sniff_time
-        
-        if new_packet.src_ip == myIP: #outgoing
-            #add to hash of outgoing requests without a response yet
-            outgoing_ARP_hash(hashtable, new_packet)
+    if packet_info.src_ip == my_IP: #outgoing
+        #add to request queue
+        print(f"Outgoing request to address {packet_info.dest_ip}")
+        packet_info.expiry = time.time() + 2
+        request_queue[packet_info.dest_ip] = packet_info
+        # take the opportunity to purge expired requests from the queue
 
-        elif new_packet.dest_ip == myIP: #incoming
-            if check_hash(new_packet.ip_addr) == True: 
-                #is response to a sent arp request-> remove from hash table
-                #remove_ARP_hash(hashtable, new_packet)    
-                new_packet.complete = True
-                hashtable[new_packet.ip_addr] = new_packet
+    elif packet_info.dest_ip == my_IP: #incoming
+
+        if packet_info.opcode == 1: # request 
+            print(f"Incoming request from address {packet_info.src_ip}")
+            # check the arp cache
+            # if a mapping exists whose entry does not match the one in the request,
+                # purge related entries from the arp cache 
+                # do not respond 
+                # optionally: send a new arp request to the related ip address 
+            # otherwise 
+                # reply
+
+        elif packet_info.opcode == 2: # reply
+            print(f"Incoming reply from address {packet_info.src_ip}") 
+            # check request queue 
+            # if a corresponding request is not present at all
+                # discard 
+            # if a corresponding request is present, but marked complete 
+                # purge related entries from the arp cache 
+                # send a new request 
+            
+# Reset kernel parameters     
+subprocess.run(["sysctl",f"net.ipv4.conf.{my_name}.arp_accept=1"])
+
+
                 
-                if check_cache(arp_cache, new_packet.mac_addr) == False: 
-                    #no duplicates -> store the packet in our cache
-                    store_cache(arp_cache, new_packet) 
-                
-                    #manually send a response
-                    create_arp_reply(new_packet)
-                
-                elif check_cache(arp_cache, new_packet.mac_addr) == True: 
-                    #if duplicates, remove from cache and drop new packet
-                    remove_cache(arp_cache, new_packet.mac_addr)
-                    
-        purge_hash(hashtable)
-
-def create_arp_reply(new_packet):
-    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
-
-
-
-
-#Prevention:
-
-#send junk packet, entrap them
