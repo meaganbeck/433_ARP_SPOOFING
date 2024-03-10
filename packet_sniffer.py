@@ -2,14 +2,23 @@
 
 import os
 import re
-import pyshark # dependency
 import time
 import socket
 from sys import argv
 from outgoing_hash import * # outgoing_ARP_hash(), remove_ARP_hash(), check_hash()
 from arp_cache import * #store_cache(), check_cache(), get_cache()
-from scapy.all import * # dependency 
 from block_packets import * #block_arp_cache(), block_gratuitous()
+
+# alert the user if they don't have the required dependencies installed 
+try: 
+    import pyshark 
+    from scapy.all import *
+except ModuleNotFoundError: 
+    print("Make sure you are using Python 3.7+ and have installed the following dependencies:")
+    print("pyshark (pip3 install pyshark)")
+    print("scapy (pip3 install scapy)")
+    exit()
+
 
 # argv contains: interface name, interface ip, interface mac (in that order)
 my_name = argv[0]
@@ -24,7 +33,7 @@ class Packet:
     complete = False
 
 
-# TODO: Fix scapy issue (cannot import name 'CryptographyDepracationWarning')
+# TODO: Debugging option: Print a message when a spoofed packet is found?
 
 def capture_packets():
     block_gratuitous(my_name) #drops all gratuitous responses

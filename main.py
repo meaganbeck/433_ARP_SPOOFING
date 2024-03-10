@@ -4,12 +4,14 @@ import os
 import re
 import time
 import socket
+import subprocess
+
 
 try:
 	import netifaces
-	import subprocess
 except ModuleNotFoundError:
-	print("Please ensure that you have installed the netifaces module for python (pip3 install netifaces).") 
+	print("Make sure you are using Python 3.7+ and have installed the following dependencies:")
+	print("netifaces (pip3 install netifaces)") 
 	exit()
 
 def main(): 
