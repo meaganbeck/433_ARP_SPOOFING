@@ -15,7 +15,13 @@ except ModuleNotFoundError:
 
 if os.geteuid() != 0:
 	print("Error: Script requires root privileges.")
-	print("Make sure to run this program with 'sudo -E'.")
+	print("Try running this script with 'sudo -E'.")
+	exit()
+
+try:
+	subprocess.run(["arp"])
+except: 
+	print("This program requires the arp utility (sudo apt install net-tools).")
 	exit()
 
 def main(): 
@@ -35,20 +41,19 @@ def main():
 			print("Modifying kernel parameters...") 
 			subprocess.run(["sysctl",f"net.ipv4.conf.{interface_name}.arp_accept=0"])
 			sniffer = subprocess.Popen(['sudo', '-E', cur_dir + '/packet_sniffer.py', interface_name, interface_IP, interface_MAC])
+			# ^^ This is probably not secure and you should never do this 
 			sniffers.append(sniffer) 
 	
 	# Wait for children to terminate 
 	for sniffer in sniffers: 
 		sniffer.wait()
 
-	# 
+	# Reset kernel parameters to default 
 	for i in range(len(network_interfaces)):
 		interface_name = network_interfaces[i]
 		if not (interface_name.startswith('lo')): 
 			subprocess.run(["sysctl",f"net.ipv4.conf.{interface_name}.arp_accept=1"])
 
-
-	return 0
-
+	return 
 if __name__ == "__main__":
 	main()

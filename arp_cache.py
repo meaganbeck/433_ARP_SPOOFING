@@ -2,12 +2,9 @@
 
 import os
 import re
-# import pyshark
 import time
 import socket
 
-#TODO: 
-#Build cache; use a Class? 
 
 
 def store_cache(arp_cache, new_packet):
