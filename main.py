@@ -13,6 +13,11 @@ except ModuleNotFoundError:
 	print("netifaces (pip3 install netifaces)") 
 	exit()
 
+if os.geteuid() != 0:
+	print("Error: Script requires root privileges.")
+	print("Make sure to run this program with 'sudo -E'.")
+	exit()
+
 def main(): 
 	# Scan for interface names 
 	network_interfaces = netifaces.interfaces()
@@ -25,12 +30,23 @@ def main():
 			addresses = netifaces.ifaddresses(interface_name)
 			interface_IP = addresses[netifaces.AF_INET][0]['addr']
 			interface_MAC = addresses[netifaces.AF_LINK][0]['addr']
+			# Disable acceptance of gratuitious arp requests in the kernel
+			print(f"Interface name: {interface_name}")
+			print("Modifying kernel parameters...") 
+			subprocess.run(["sysctl",f"net.ipv4.conf.{interface_name}.arp_accept=0"])
 			sniffer = subprocess.Popen(['sudo', '-E', cur_dir + '/packet_sniffer.py', interface_name, interface_IP, interface_MAC])
 			sniffers.append(sniffer) 
 	
 	# Wait for children to terminate 
 	for sniffer in sniffers: 
 		sniffer.wait()
+
+	# 
+	for i in range(len(network_interfaces)):
+		interface_name = network_interfaces[i]
+		if not (interface_name.startswith('lo')): 
+			subprocess.run(["sysctl",f"net.ipv4.conf.{interface_name}.arp_accept=1"])
+
 
 	return 0
 
