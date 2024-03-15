@@ -3,6 +3,7 @@
 import time
 from sys import argv
 from arp_cache import * 
+from outgoing_hash import *
 
 try: 
     import pyshark 
@@ -14,9 +15,9 @@ except ModuleNotFoundError:
     print("tshark (sudo apt install tshark)")
     exit()
     
-# def create_arp_reply(new_packet):
-    # don't know 1) if this works 2) if we need it
-    # sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
+def create_arp_reply(new_packet):
+    # TODO: figure out why this line is giving warnings 
+    sendp(Ether(dst=new_packet.mac_addr)/ARP(hwdst=new_packet.mac_addr, pdst=new_packet.dest_ip, psrc=new_packet.src_ip), my_name)
 
 
 # argv contains: Interface name, interface ip, interface mac (in that order).
@@ -51,8 +52,8 @@ capture = pyshark.LiveCapture(interface=my_name, bpf_filter='arp')
 
 #sniff for packets continuously
 for packet in capture.sniff_continuously(packet_count=5):
-    # TODO: Catch keyboard signal to terminate loop
-    print("Sniffing...")
+    # TODO: Catch interrupt/define exit behavior
+    # print("Sniffing...")
 
     #store packet data
     arp_layer = packet['ARP']
@@ -66,31 +67,37 @@ for packet in capture.sniff_continuously(packet_count=5):
         #add to request queue
         print(f"Outgoing request to address {packet_info.dest_ip}")
         packet_info.expiry = time.time() + 2
-        request_queue[packet_info.dest_ip] = packet_info
-        # take the opportunity to purge expired requests from the queue
+        enqueue(request_queue, packet)
+        purge_queue(request_queue)
 
     elif packet_info.dest_ip == my_IP: #incoming
 
         if packet_info.opcode == 1: # request 
-            print(f"Incoming request from address {packet_info.src_ip}")
-            # check the arp cache
-            # if a mapping exists whose entry does not match the one in the request,
+            pass 
+            # print(f"Incoming request from address {packet_info.src_ip}")
+            # check the arp cache. if a mapping exists whose entry does not match the one in the request, the person who sent it is spoofing
                 # purge related entries from the arp cache 
                 # do not respond 
-                # optionally: send a new arp request to the related ip address 
             # otherwise 
-                # reply
+                # construct new packet with my information 
+                # input into create_arp_reply
 
         elif packet_info.opcode == 2: # reply
-            print(f"Incoming reply from address {packet_info.src_ip}") 
+            pass 
+            # print(f"Incoming reply from address {packet_info.src_ip}") 
+            # TODO: rewrite
             # check request queue 
-            # if a corresponding request is not present at all
-                # discard 
-            # if a corresponding request is present, but marked complete 
-                # purge related entries from the arp cache 
-                # send a new request 
+            # if a corresponding request is present but already complete: 
+                # purge related entries from the arp cache
+                # purge the request from the request queue 
+                # send a new arp request to the relevant ip
+            # if a corresponding request is present but incomplete, and not expired: 
+                # reply to it normally 
+                # mark the request as complete
+            # otherwise do nothing 
+            pass 
             
-# Reset kernel parameters     
+# Reset kernel parameters to default   
 subprocess.run(["sysctl",f"net.ipv4.conf.{my_name}.arp_accept=1"])
 
 

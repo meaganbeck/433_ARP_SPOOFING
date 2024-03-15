@@ -17,6 +17,7 @@ def store_cache(arp_cache, new_packet):
 
 
 def check_cache(arp_cache, mac_addr):
+    #TODO: rewrite 
     """I check the cache for duplicate mac addresses. I return a bool"""
     for el in arp_cache:
         if mac_addr == el:
