@@ -27,14 +27,14 @@ my_IP = argv[2]
 my_MAC = argv[3]
 
 class Packet_Info:
-    def __init__(mac_src, mac_dest, src, dest, opcode):
-        src_mac = mac_src
-        dest_mac = mac_dest 
-        src_ip = src
-        dest_ip = dest
-        opcode = 0
-        expiry = 0
-        complete = False
+    def __init__(self, mac_src, mac_dest, src, dest, opcode):
+        self.src_mac = mac_src
+        self.dest_mac = mac_dest 
+        self.src_ip = src
+        self.dest_ip = dest
+        self.opcode = 0
+        self.expiry = 0
+        self.complete = False
 
 if os.geteuid() != 0:
     print("Error: Script requires root privileges.")
@@ -61,9 +61,7 @@ try:
 
         #store packet data
         arp_layer = packet['ARP']
-        packet_deets = Packet_Info(arp_layer.src_hw_mac, arp_layer.dst_hw_mac, 
-                                  arp_layer.src_proto_ipv4, arp_layer.dst_proto_ipv4, 
-                                  int(arp_layer.opcode, 16))
+        packet_deets = Packet_Info(arp_layer.src_hw_mac, arp_layer.dst_hw_mac, arp_layer.src_proto_ipv4, arp_layer.dst_proto_ipv4, int(arp_layer.opcode, 16))
         
         if (packet_deets.src_ip == my_IP and packet_deets.opcode == 1): #outgoing request
             # print(f"Outgoing request to address {packet_deets.dest_ip}")
