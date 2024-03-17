@@ -14,10 +14,6 @@ except ModuleNotFoundError:
     print("scapy (pip3 install scapy)")
     print("tshark (sudo apt install tshark)")
     exit()
-    
-def create_arp_reply(packet):
-    # TODO: Write 
-    pass 
 
 
 # argv contains: Interface name, interface ip, interface mac (in that order).
@@ -35,6 +31,9 @@ class Packet_Info:
         self.opcode = 0
         self.expiry = 0
         self.complete = False
+    def __str__(self):
+        return f"== PACKET == \n Source MAC: {self.src_mac} \n Destination MAC: {self.dest_mac} \n Source IP: {self.src_ip} \n Destination IP: {self.dest_ip} \n Opcode: {self.opcode}"
+    
 
 if os.geteuid() != 0:
     print("Error: Script requires root privileges.")
@@ -44,7 +43,7 @@ arp_cache = {} # keyed by source ip
 request_queue = {} # keyed by destination ip 
 alarm = 0
 
-# TODO: Refactor arp_cache.py module functions 
+# TODO: REWRITE ARP_CACHE.PY FUNCTIONS AND ADD CALLS TO THEM
 
 try:
     print(f"Beginning live capture on interface {my_name}...")
@@ -98,7 +97,7 @@ try:
                  
 except KeyboardInterrupt:
     print("")
-    print("Keyboard interrupt detected. Exiting...")
+    print("Exiting...")
     exit() 
 
 

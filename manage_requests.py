@@ -1,9 +1,5 @@
 #!/usr/bin/python3
-
-import os
-import re
 import time
-import socket
 
 def enqueue(hash_table, packet):
     """Store outgoing packet into the hash table"""
