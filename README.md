@@ -10,13 +10,16 @@ Removal of suspicious ARP cache entries and dropping of associated packets.
 
 **#Requirements:**\
 Python 3.7 or newer
-A Linux machine, running Ubuntu or Kali Linux
+Debian Linux or a derivative (Ubuntu, Kali Linux)
+
 
 **#Dependencies:**\
-PyShark - install via pip3 install pyshark
-Scapy - install via pip3 install scapy
-Netifaces - install via pip3 install netifaces
-Tshark - install via sudo apt install tshark
+
+Tshark 
+Pyshark
+Scapy
+Netifaces
+
 
 **#Usage:**\
 ArpEyeMini is a terminal-based program. The subprocesses for each interface will run until killed; the main "watchdog" program performs cleanup and resets kernel parameters to their default settings. 
