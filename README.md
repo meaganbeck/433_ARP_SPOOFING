@@ -29,7 +29,7 @@ If suspicious activity is detected, the script will take actions to mitigate the
 
 **#Credits:**\
 Wireshark - This software relies on Wireshark, a network protocol analyzer.
-  https://www.wireshark.org/
+  https://www.wireshark.org/\
 Scapy - This software relies on Scapy, a powerful interactive packet manipulation library. 
   https://scapy.net/
 
