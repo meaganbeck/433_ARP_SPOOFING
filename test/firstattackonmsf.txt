@@ -1,0 +1,7 @@
+Attacker: Ettercap 0.8.3 on Kali Linux
+Target: Metasploitable
+Promiscuous unified sniffiing
+Network: NAT, promiscuous mode = deny
+*No program to mitigate ARP Spoofing yet.
+
+Metasploitable detected two instances of the same mac address with different ip addresses. 

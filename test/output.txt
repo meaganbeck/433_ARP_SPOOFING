@@ -1,0 +1,11 @@
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.0.2.15                ether   08:00:27:c7:e1:36   C                     enp0s3
+_gateway                 ether   08:00:27:c7:e1:36   C                     enp0s3
+10.0.2.3                 ether   08:00:27:c7:e1:36   C                     enp0s3
+10.0.2.2                 ether   08:00:27:c7:e1:36   C                     enp0s3
+net.ipv4.conf.enp0s3.arp_accept = 0
+Beginning live capture on interface enp0s3...
+
+Keyboard interrupt detected. Exiting...
+Interface name: enp0s3
+Modifying kernel parameters...

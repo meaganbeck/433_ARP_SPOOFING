@@ -1,33 +1,20 @@
 #!/usr/bin/python3
 
-import os
-import re
-import pyshark
-import time
-import socket
-
-#TODO: 
-#Build cache; use a Class? 
+import subprocess
 
 
-def store_cache(arp_cache, new_packet):
-    """I store Packet obj in our cache (dictionary)"""
-    arp_cache[new_packet.mac_addr] = new_packet;
-#dictionary (key, value) == (mac, Packet)
 
+def store_cache(arp_cache, packet):
+    """Cache an (ip,mac) pairing."""
+    arp_cache[packet.src_ip] = packet.src_mac
+    #dictionary (key, value) == (ip, mac)
 
-def check_cache(arp_cache, mac_addr):
-    """I check the cache for duplicate mac addresses. I return a bool"""
-    for el in arp_cache:
-        if mac_addr == el:
-            return True
-    return False
+def check_cache(arp_cache, packet):
+    """Check if the declared (ip, mac) pair mapping is cached. """
+    return (arp_cache[packet.src_ip] == packet.src_mac)
 
-def get_cache(arp_cache, mac_addr):
-    """I take a mac address and return a Packet obj"""
-    packet = arp_cache[mac_addr]
-    return packet
+def remove_cache(arp_cache, packet):
+    """Purge cache entries associated with a packet's source IP."""
+    del arp_cache[packet.src_ip]
+    subprocess.run(["arp", "-d", f"{packet.src_ip}"])
 
-def remove_cache(arp_cache, mac_addr):
-    """I take a mac address and remove all entries with the address from the cache"""
-    del arp_cache[mac_addr]
